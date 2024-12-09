@@ -254,26 +254,38 @@ public class BoardDay3 extends BoardDay2 {
     private void moveGhost(Mover ghost) {
         int nextRow = ghost.getNextRow();
         int nextCol = ghost.getNextColumn();
+        int currentRow = ghost.getRow();
+        int currentCol = ghost.getColumn();
         
         if (isValidMove(nextRow, nextCol)) {
-            // Remember current cell's state
-            char currentItem = mazeArray[ghost.getRow()][ghost.getColumn()].getItem();
+            // 保存当前位置的状态
+            Cell currentCell = mazeArray[currentRow][currentCol];
+            char currentItem = currentCell.getItem();
             
-            // Update current cell
-            if (currentItem == 'F') {
-                mazeArray[ghost.getRow()][ghost.getColumn()].setIcon(Icons.FOOD);
-            } else if (currentItem == 'C') {
-                mazeArray[ghost.getRow()][ghost.getColumn()].setIcon(new ImageIcon("images/Cherry.bmp"));
-            } else {
-                mazeArray[ghost.getRow()][ghost.getColumn()].setIcon(Icons.BLANK);
+            // 恢复当前位置的原始状态
+            if (currentItem == 'G') {  // Ghost在空地上
+                currentCell.setIcon(Icons.BLANK);
+                currentCell.setItem(' ');
+            } else if (currentItem == 'H') {  // Ghost在食物上
+                currentCell.setIcon(Icons.FOOD);
+                currentCell.setItem('F');
             }
             
-            // Move ghost
+            // 移动ghost
             ghost.move();
             
-            // Update new cell
-            mazeArray[nextRow][nextCol].setIcon(isPowered ? 
-                new ImageIcon("images/BlueGhost.bmp") : ghost.getIcon());
+            // 保存新位置的原始状态并更新
+            Cell nextCell = mazeArray[nextRow][nextCol];
+            char nextItem = nextCell.getItem();
+            
+            if (nextItem == 'F') {  // 如果新位置有食物
+                nextCell.setItem('H');  // 标记为Ghost在食物上
+            } else {
+                nextCell.setItem('G');  // 标记为Ghost在空地上
+            }
+            
+            // 设置Ghost外观 - Power模式下统一使用GHOST[0]
+            nextCell.setIcon(isPowered ? Icons.GHOST[0] : ghost.getIcon());
         }
     }
     
@@ -345,8 +357,9 @@ public class BoardDay3 extends BoardDay2 {
         ghosts[2].setRow(11); ghosts[2].setColumn(15);
         
         for (int i = 0; i < ghosts.length; i++) {
-            mazeArray[ghosts[i].getRow()][ghosts[i].getColumn()]
-                .setIcon(Icons.GHOST[i]);
+            mazeArray[ghosts[i].getRow()][ghosts[i].getColumn()].setIcon(Icons.GHOST[i]);
+            mazeArray[ghosts[i].getRow()][ghosts[i].getColumn()].setItem('G');  // 标记Ghost位置
+            ghosts[i].setIcon(Icons.GHOST[i]);
         }
         
         // Reset power mode
@@ -362,9 +375,18 @@ public class BoardDay3 extends BoardDay2 {
             if (powerTimer <= 0) {
                 isPowered = false;
                 ghostsEaten = 0;
+                
+                // 恢复所有Ghost的正常状态
                 for (int i = 0; i < ghosts.length; i++) {
+                    int row = ghosts[i].getRow();
+                    int col = ghosts[i].getColumn();
+                    Cell cell = mazeArray[row][col];
+                    
+                    // 恢复原始颜色
+                    cell.setIcon(Icons.GHOST[i]);
                     ghosts[i].setIcon(Icons.GHOST[i]);
                 }
+                
                 messageLabel.setText("Power mode ended!");
             }
         }
@@ -430,9 +452,15 @@ public class BoardDay3 extends BoardDay2 {
         powerTimer = POWER_DURATION;
         ghostsEaten = 0;
         
-        // Change all ghosts to vulnerable state
+        // 更新所有Ghost的状态
         for (Mover ghost : ghosts) {
-            ghost.setIcon(new ImageIcon("../resources/images/BlueGhost.bmp"));
+            int row = ghost.getRow();
+            int col = ghost.getColumn();
+            Cell cell = mazeArray[row][col];
+            
+            // Power模式下统一使用GHOST[0]表示vulnerable状态
+            cell.setIcon(Icons.GHOST[0]);
+            ghost.setIcon(Icons.GHOST[0]);
         }
         
         playSound(powerSound);

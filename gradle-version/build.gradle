@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.pacman'
+version = '1.0-SNAPSHOT'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+// 设置编码
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass = 'com.pacman.PacManGame'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'com.pacman.PacManGame'
+        )
+    }
+    
+    // 包含源代码里的资源文件
+    from {
+        sourceSets.main.resources
+    }
+    
+    // 包含运行时依赖
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    // 排除签名文件
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    
+    // 如果有重复文件则使用第一个
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+// 添加一个任务来运行生成的jar
+task runJar(type: JavaExec) {
+    classpath = files(jar.archiveFile)
+    mainClass = 'com.pacman.PacManGame'
+}
+
+test {
+    useJUnitPlatform()
+    
+    // 显示测试输出
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+// 配置Java源文件和资源文件的编码
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+// processResources {
+//     charset = 'UTF-8'
+// }
+
+// 添加构建信息到manifest
+jar.manifest.attributes(
+    'Implementation-Title': project.name,
+    'Implementation-Version': project.version,
+    'Built-By': System.properties['user.name'],
+    'Built-Date': new Date(),
+    'Created-By': "Gradle ${gradle.gradleVersion}"
+)

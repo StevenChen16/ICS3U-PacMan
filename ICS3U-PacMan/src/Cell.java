@@ -1,26 +1,22 @@
 import javax.swing.JLabel;
 
 @SuppressWarnings("serial")
-
-/*
-* This class ...
-*/
-public class Cell extends JLabel{
-
-    //
+public class Cell extends JLabel {
+    // Character representation of cell contents:
+    // 'P' - Pac-Man
+    // '0','1','2' - Different ghost types
+    // 'W' - Wall
+    // 'F' - Food pellet
+    // 'D' - Ghost house door
+    // ' ' - Empty space
     private char item;
 
-    // This method ...
     public Cell(char item) {
-
         super();
         this.item = item;
-
-        //
         setCodeIcon();
     }
 
-    //
     public char getItem() {
         return item;
     }
@@ -29,9 +25,11 @@ public class Cell extends JLabel{
         this.item = item;
     }
 
-    // This method ...
+    /**
+     * Sets the appropriate icon based on the cell's item code.
+     * Maps each character code to its corresponding sprite image.
+     */
     private void setCodeIcon() {
-
         if (item == 'P')
             setIcon(Icons.PACMAN[0]);
         else if (item == '0')
@@ -47,5 +45,4 @@ public class Cell extends JLabel{
         else if (item == 'D')
             setIcon(Icons.DOOR);
     }
-
 }

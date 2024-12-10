@@ -11,6 +11,8 @@ public class BoardDay2 extends BoardDay1 {
         super();
     }
 
+    //Enhanced move handling with portal functionality.
+    // 实现穿越传送门功能的移动逻辑
     @Override
     protected void performMove() {
         if (pacman != null && !pacman.isDead()) {
@@ -25,6 +27,7 @@ public class BoardDay2 extends BoardDay1 {
                 currentCell.setIcon(Icons.BLANK);
                 currentCell.setItem(' ');
                 
+                //set new position
                 // 设置新位置
                 nextCol = 26;
                 pacman.setColumn(26);
@@ -34,6 +37,7 @@ public class BoardDay2 extends BoardDay1 {
                 pacman.move();
                 return;
             } else if (nextCol > 26) {
+                // Clear current position
                 // 完全清除当前位置
                 Cell currentCell = mazeArray[pacman.getRow()][currentCol];
                 currentCell.setIcon(Icons.BLANK);
@@ -49,7 +53,7 @@ public class BoardDay2 extends BoardDay1 {
                 return;
             }
 
-            // 正常移动处理
+            // normal
             if (nextRow >= 0 && nextRow < 25 && isValidMove(nextRow, nextCol)) {
                 Cell currentCell = mazeArray[pacman.getRow()][pacman.getColumn()];
                 Cell nextCell = mazeArray[nextRow][nextCol];

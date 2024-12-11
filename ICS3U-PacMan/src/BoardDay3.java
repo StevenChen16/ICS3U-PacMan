@@ -1,12 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import javax.sound.sampled.*;
-import java.io.File;
-import java.io.IOException;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.io.*;
 
 @SuppressWarnings("serial")
+
 public class BoardDay3 extends BoardDay2 {
     // Constants
     private static final int POWER_DURATION = 300;
@@ -40,12 +46,44 @@ public class BoardDay3 extends BoardDay2 {
     protected Clip deathSound;
     protected Clip powerSound;
     protected Clip intermSound;
+
+    
+    private static final int MAX_HIGH_SCORES = 10;
+    private static final int[] DIFFICULTY_SPEEDS = {250, 200, 150}; // Easy, Normal, Hard
+    
+    protected int difficulty = 1; // 0=Easy, 1=Normal, 2=Hard
+    protected long gameStartTime;
+    protected int[] ghostEatenCounts = new int[3];
+    protected boolean isPowerUpActive = false;
+    protected float gameSpeed = 1.0f;
+    protected boolean isMuted = false;
+    protected List<HighScore> highScores = new ArrayList<>();
+
+    private static class HighScore implements Comparable<HighScore> {
+        String name;
+        int score;
+        
+        public HighScore(String name, int score) {
+            this.name = name;
+            this.score = score;
+        }
+        
+        @Override
+        public int compareTo(HighScore other) {
+            return other.score - this.score; // 降序排序
+        }
+    }
     
     public BoardDay3() {
         super();
         initializeGame();
         setupUI();
         setupGhosts();
+
+        gameStartTime = System.currentTimeMillis();
+        loadHighScores();
+        updateDifficultyParams();
+
         setupCherryTimer();
         loadSounds();
         playSound(beginningSound);
@@ -92,8 +130,114 @@ public class BoardDay3 extends BoardDay2 {
         add(scorePanel, BorderLayout.NORTH);
         add(mazePanel, BorderLayout.CENTER);
         validate();
+
+        
     }
     
+    private void updateDifficultyParams() {
+        // 添加空值检查以增加健壮性
+        if (ghostTimer != null) {
+            ghostTimer.setDelay(DIFFICULTY_SPEEDS[difficulty]);
+        }
+        if (cherryTimer != null) {
+            cherryTimer.setDelay(10000 - (difficulty * 2000));
+        }
+    }
+
+    private void loadHighScores() {
+        try {
+            File file = new File("pacman_scores.txt");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    highScores.add(new HighScore(parts[0], Integer.parseInt(parts[1])));
+                }
+                reader.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading high scores: " + e.getMessage());
+        }
+    }
+
+    private void saveHighScore() {
+        try {
+            // 添加新分数
+            highScores.add(new HighScore("Player", score));
+            // 排序并只保留前10个
+            Collections.sort(highScores);
+            if (highScores.size() > MAX_HIGH_SCORES) {
+                highScores = highScores.subList(0, MAX_HIGH_SCORES);
+            }
+            
+            // 保存到文件
+            BufferedWriter writer = new BufferedWriter(new FileWriter("pacman_scores.txt"));
+            for (HighScore hs : highScores) {
+                writer.write(hs.name + "," + hs.score + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("Error saving high scores: " + e.getMessage());
+        }
+    }
+
+    private void handleSpecialEvents() {
+        if (random.nextDouble() < 0.01) { // 1%几率触发特殊事件
+            int eventType = random.nextInt(4);
+            switch (eventType) {
+                case 0: // Ghost加速
+                    ghostTimer.setDelay((int)(ghostTimer.getDelay() * 0.8));
+                    messageLabel.setText("Ghosts Speed Up!");
+                    break;
+                case 1: // 双倍得分
+                    score *= 2;
+                    messageLabel.setText("Double Score!");
+                    break;
+                case 2: // PacMan隐形
+                    isPowerUpActive = true;
+                    messageLabel.setText("Invisible PacMan!");
+                    Timer invisibleTimer = new Timer(5000, e -> isPowerUpActive = false);
+                    invisibleTimer.setRepeats(false);
+                    invisibleTimer.start();
+                    break;
+            }
+        }
+    }
+    
+    private void resetGame() {
+        // 重置基本游戏状态
+        score = 0;
+        lives = 3;
+        isPaused = false;
+        isPowered = false;
+        powerTimer = 0;
+        ghostsEaten = 0;
+        
+        // 重置统计数据
+        gameStartTime = System.currentTimeMillis();
+        for (int i = 0; i < ghostEatenCounts.length; i++) {
+            ghostEatenCounts[i] = 0;
+        }
+        
+        // 重置位置
+        resetPositions();
+        
+        // 更新显示
+        scoreLabel.setText("Score: 0");
+        livesLabel.setText("Lives: " + lives);
+        messageLabel.setText("Ready!");
+        
+        // 确保定时器在运行
+        if (!gameTimer.isRunning()) {
+            gameTimer.start();
+            ghostTimer.start();
+            cherryTimer.start();
+        }
+    }
+    
+
+
     private void setupGhosts() {
         ghosts = new Mover[3];
         int ghostCount = 0;
@@ -340,6 +484,29 @@ public class BoardDay3 extends BoardDay2 {
         gameTimer.stop();
         ghostTimer.stop();
         cherryTimer.stop();
+
+        long gameTime = (System.currentTimeMillis() - gameStartTime) / 1000;
+        String stats = String.format(
+            "Game Statistics:\n" +
+            "Time Played: %d seconds\n" +
+            "Total Score: %d\n" +
+            "Ghosts Eaten: %d\n" +
+            "Ghost 1: %d times\n" +
+            "Ghost 2: %d times\n" +
+            "Ghost 3: %d times",
+            gameTime, score, ghostsEaten,
+            ghostEatenCounts[0], ghostEatenCounts[1], ghostEatenCounts[2]
+        );
+        
+        JOptionPane.showMessageDialog(null, stats);
+        saveHighScore();
+        
+        // 显示排行榜
+        StringBuilder highScoreText = new StringBuilder("High Scores:\n");
+        for (HighScore hs : highScores) {
+            highScoreText.append(String.format("%s: %d\n", hs.name, hs.score));
+        }
+        JOptionPane.showMessageDialog(null, highScoreText.toString());
     }
     
     private void resetPositions() {
@@ -394,13 +561,27 @@ public class BoardDay3 extends BoardDay2 {
     
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_P) {
-            togglePause();
-        } else {
-            super.keyPressed(e);
-            if (!gameTimer.isRunning()) {
-                playSound(chompSound);
-            }
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_P:
+                togglePause();
+                break;
+            case KeyEvent.VK_R:
+                resetGame();
+                break;
+            case KeyEvent.VK_M:
+                isMuted = !isMuted;
+                break;
+            case KeyEvent.VK_PLUS:
+            case KeyEvent.VK_EQUALS:
+                if (difficulty < 2) difficulty++;
+                updateDifficultyParams();
+                break;
+            case KeyEvent.VK_MINUS:
+                if (difficulty > 0) difficulty--;
+                updateDifficultyParams();
+                break;
+            default:
+                super.keyPressed(e);
         }
     }
     

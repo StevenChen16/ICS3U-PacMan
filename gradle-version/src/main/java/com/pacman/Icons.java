@@ -19,6 +19,7 @@ public class Icons {
     public static final ImageIcon BLANK = loadIcon("Black.bmp");
     public static final ImageIcon DOOR = loadIcon("Black.bmp");
     public static final ImageIcon SKULL = loadIcon("Skull.bmp");
+    public static final ImageIcon CHERRY = loadIcon("Cherry.bmp");
 
     // Pacman animation frames
     public static final ImageIcon[] PACMAN = {

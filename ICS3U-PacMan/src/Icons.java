@@ -10,6 +10,7 @@ public class Icons {
     public static final ImageIcon BLANK = new ImageIcon(IMAGE_PATH + "Black.bmp");
     public static final ImageIcon DOOR = new ImageIcon(IMAGE_PATH + "Black.bmp");
     public static final ImageIcon SKULL = new ImageIcon(IMAGE_PATH + "Skull.bmp");
+    public static final ImageIcon Cherry = new ImageIcon(IMAGE_PATH + "Cherry.bmp");
 
     // Pacman animation frames
     public static final ImageIcon[] PACMAN = {

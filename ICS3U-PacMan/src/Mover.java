@@ -18,6 +18,9 @@ public class Mover extends JLabel{
     //
     private boolean isDead;
 
+    private boolean isEaten; // 新增状态标记
+    private int respawnTimer; // 新增重生计时器
+
     //
     public Mover(int row, int column) {
         super();
@@ -64,6 +67,14 @@ public class Mover extends JLabel{
 
     public void setDead(boolean isDead) {
         this.isDead = isDead;
+    }
+
+    public boolean isEaten() {
+        return isEaten;
+    }
+    
+    public void setEaten(boolean eaten) {
+        this.isEaten = eaten;
     }
 
     // This method ...

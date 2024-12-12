@@ -50,6 +50,7 @@ src/
 │  Cell.java            # Individual cell representation
 │  Icons.java           # Game resource management
 │  Mover.java           # Base class for moving objects
+│  MenuGUI.java         # Menu GUI Frame
 │
 resources/
 │  └─images/            # Game sprites and icons
@@ -61,47 +62,76 @@ resources/
 
 1. Object-Oriented Design
    - Inheritance hierarchy for game boards (BoardDay1 → BoardDay2 → BoardDay3)
-   - Encapsulation of game elements (Cell, Mover classes)
-   - Clear separation of concerns between UI and game logic
+   - Encapsulation of game elements (Cell, Mover, Node classes)
+   - Clear separation of concerns between UI, game logic, and menu system
+   - Modular design for easy extension and modification
 
 2. Ghost AI Implementation
-   - Three different ghost behaviors:
-     * Direct Chase: Follows PacMan directly
-     * Predictive Chase: Attempts to intercept PacMan
-     * Random Aggressive: Combines random movement with chase behavior
-   - Different behavior in normal and vulnerable states
+   - Three distinct ghost personalities with unique behaviors:
+     * Blinky (Direct Chase): Follows PacMan directly
+     * Pinky (Predictive Chase): Attempts to intercept PacMan
+     * Inky (Random Aggressive): Combines random movement with chase behavior
+   - State-based behavior system:
+     * Normal state: Unique pursuit strategies
+     * Vulnerable state: Escape behavior during power mode
+     * Respawn mechanism after being eaten
+   - Prepared framework for Dijkstra pathfinding implementation
+   - Configurable AI difficulty levels
 
-3. Event Handling
-   - Keyboard input processing
-   - Collision detection
-   - Game state management
+3. Power Mode System
+   - Strategic power pellet placement in maze corners
+   - Complete power mode lifecycle management:
+     * Activation through power pellets
+     * Ghost vulnerability state handling
+     * Score multiplier for eating ghosts
+     * Timed duration with visual countdown
+   - Cherry bonus item system
 
-4. Resource Management
+4. User Interface Design
+   - Multi-language support (English/Chinese)
+   - Comprehensive menu system:
+     * Main menu with game start, instructions, and exit options
+     * In-game pause menu with difficulty settings
+     * Detailed bilingual instruction panel
+   - Dynamic score and status display
+   - Visual feedback for game states
+
+5. Event Handling & Resource Management
+   - Sophisticated keyboard input processing
+   - Collision detection system
    - Centralized resource loading
-   - Efficient sprite management
-   - Sound effect integration
+   - Efficient sprite and sound management
+   - Game state persistence
 
 ## Learning Outcomes
 
 Through this project, I demonstrated:
-- Understanding of Java OOP principles
-- GUI programming skills with Java Swing
+- Advanced Java OOP principles including inheritance, polymorphism, and encapsulation
+- GUI programming expertise with Java Swing
 - Game development concepts including:
-  * Collision detection
-  * AI behavior implementation
-  * Game state management
-  * Resource handling
+  * Complex collision detection systems
+  * Multi-layered AI behavior implementation
+  * Comprehensive game state management
+  * Efficient resource handling and caching
+- Multi-language support implementation
+- Menu system design and user interface planning
+- Game resource organization and management
 - Problem-solving skills in implementing complex game mechanics
-- Code organization and project structure planning
+- Clean code practices and project structure planning
 
 ## Future Improvements
 
 Potential areas for enhancement:
-- Additional levels with different layouts
-- High score system
-- More sophisticated ghost AI
-- Power pellet items instead of random activation
-- Animation improvements
+- Implementation of Dijkstra's pathfinding for advanced ghost AI
+- Additional maze layouts and level progression
+- Enhanced visual effects and animations
+- Customizable control schemes
+- Online leaderboard system
+- Achievement system
+- Level editor for custom maze creation
+- Additional power-up types and game mechanics
+- Network multiplayer capability
+- Mobile touch controls support
 
 ## Repository
 
